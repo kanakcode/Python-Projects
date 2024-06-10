@@ -1,0 +1,73 @@
+import cv2
+import mediapipe as mp
+import numpy as np
+import subprocess
+import os
+
+def get_system_volume():
+    output = subprocess.check_output(["osascript", "-e", "output volume of (get volume settings)"])
+    return int(output.strip()) / 100.0
+
+def set_system_volume(volume):
+    volume_percent = int(volume * 100)
+    os.system(f"osascript -e 'set volume output volume {volume_percent}'")
+    return volume_percent
+
+def calculate_distance(point1, point2):
+    return np.linalg.norm(np.array(point1) - np.array(point2))
+
+mp_hands = mp.solutions.hands
+hands = mp_hands.Hands(min_detection_confidence=0.7, min_tracking_confidence=0.7)
+mp_drawing = mp.solutions.drawing_utils
+
+cap = cv2.VideoCapture(0)
+
+while cap.isOpened():
+    success, image = cap.read()
+    if not success:
+        break
+
+    # Flip the image horizontally for a later selfie-view display
+    image = cv2.flip(image, 1)
+
+    # Convert the BGR image to RGB
+    image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+
+    # Process the image and find hands
+    result = hands.process(image_rgb)
+
+    if result.multi_hand_landmarks:
+        for hand_landmarks in result.multi_hand_landmarks:
+            # Draw hand landmarks
+            mp_drawing.draw_landmarks(image, hand_landmarks, mp_hands.HAND_CONNECTIONS)
+
+            # Get coordinates of thumb and index finger tips
+            thumb_tip = hand_landmarks.landmark[mp_hands.HandLandmark.THUMB_TIP]
+            index_tip = hand_landmarks.landmark[mp_hands.HandLandmark.INDEX_FINGER_TIP]
+
+            # Convert to pixel coordinates
+            height, width, _ = image.shape
+            thumb_tip = (int(thumb_tip.x * width), int(thumb_tip.y * height))
+            index_tip = (int(index_tip.x * width), int(index_tip.y * height))
+
+            # Calculate distance
+            distance = calculate_distance(thumb_tip, index_tip)
+
+            # Normalize distance to a range of 0 to 1
+            max_distance = np.sqrt(width**2 + height**2) / 2  # maximum possible distance in the image
+            normalized_distance = distance / max_distance
+
+            # Set system volume
+            volume = min(max(normalized_distance, 0.0), 1.0)  # ensure the volume is between 0 and 1
+            set_system_volume(volume)
+
+            # Display distance for debugging
+            cv2.putText(image, f'Distance: {distance:.2f}', (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2)
+
+    cv2.imshow('Hand Tracking', image)
+
+    if cv2.waitKey(1) & 0xFF == 27:
+        break
+
+cap.release()
+cv2.destroyAllWindows()
