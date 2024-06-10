@@ -1,0 +1,26 @@
+import cv2
+
+
+cap = cv2.VideoCapture(0)
+
+while True:        
+    status , frame = cap.read()
+    
+    gray_img = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY) 
+    classifier = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
+
+    face = classifier.detectMultiScale(gray_img)
+    try:
+        for (x,y,w,h) in face:
+            image=cv2.rectangle(frame,(x,y),(x+w,y+h),(0,225,0),1)
+        
+        cv2.imshow('myframe',image)
+        if cv2.waitKey(0.005) & 0xFF == ord('q'):
+            break
+    except:
+        cv2.imshow('myframe',frame)
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+
+cv2.destroyAllWindows()
+cap.release()
