@@ -1,0 +1,11 @@
+from googlesearch import search
+
+# Define the query
+query = "Linux World"
+
+# Perform the Google search and get the top 5 results
+search_results = search(query, num=5, stop=5, pause=2)
+
+# Print the search results
+for i, result in enumerate(search_results, start=1):
+    print(f"Result {i}: {result}")
