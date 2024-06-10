@@ -1,0 +1,17 @@
+import geocoder
+
+def get_current_location():
+    # Get current coordinates
+    current_location = geocoder.ip('me')
+    latitude, longitude = current_location.latlng
+
+    # Get current location
+    location_info = geocoder.osm([latitude, longitude], method='reverse')
+
+    return latitude, longitude, location_info.address
+
+# Example usage:
+latitude, longitude, location = get_current_location()
+print("Latitude:", latitude)
+print("Longitude:", longitude)
+print("Location:", location)
