@@ -1,0 +1,21 @@
+import subprocess
+
+def speak(text, voice=None, rate=None):
+    try:
+        command = ["say"]
+        
+        if voice:
+            command.extend(["-v", voice])
+        
+        if rate:
+            command.extend(["-r", str(rate)])
+        
+        command.append(text)
+        subprocess.run(command)
+    except Exception as e:
+        print(f"An error occurred: {e}")
+
+# Example usage with voice and rate
+#text_to_speak = "Hello, this is a test message from Python!"
+text_to_speak = input("Enter your text")
+speak(text_to_speak, rate=150)
