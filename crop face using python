@@ -1,0 +1,33 @@
+import cv2
+import matplotlib.pyplot as plt
+
+face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
+video_capture = cv2.VideoCapture(0)
+
+if not video_capture.isOpened():
+    print("Error: Could not open webcam.")
+else:
+    ret, frame = video_capture.read()
+
+    if ret:
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        faces = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
+        if len(faces) == 0:
+            print("No faces found.")
+        else:
+            for (x, y, w, h) in faces:
+                face = frame[y:y+h, x:x+w]
+
+                # Display the original image with a rectangle around the face
+                cv2.rectangle(frame, (x, y), (x+w, y+h), (255, 0, 0), 2)
+                plt.imshow(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
+                plt.title("Original Image with Face Highlighted")
+                plt.show()
+
+                # Display the cropped face
+                plt.imshow(cv2.cvtColor(face, cv2.COLOR_BGR2RGB))
+                plt.title("Cropped Face")
+                plt.show()
+    video_capture.release()
+
+cv2.destroyAllWindows()
